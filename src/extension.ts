@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { parseChangelog, findMismatches } from './semverBump';
+import { recordHit } from './reviewPrompt';
 
 let diagnostics: vscode.DiagnosticCollection;
 
@@ -8,7 +9,7 @@ function basename(uri: vscode.Uri): string {
   return path.slice(path.lastIndexOf('/') + 1);
 }
 
-function refresh(document: vscode.TextDocument): void {
+function refresh(context: vscode.ExtensionContext, document: vscode.TextDocument): void {
   if (basename(document.uri) !== 'CHANGELOG.md') return;
 
   const entries = parseChangelog(document.getText());
@@ -22,6 +23,7 @@ function refresh(document: vscode.TextDocument): void {
       vscode.DiagnosticSeverity.Warning,
     );
     diagnostic.source = 'Semver Bump Mismatch Companion';
+    recordHit(context, `${document.uri.toString()}:${line}`);
     return diagnostic;
   });
   diagnostics.set(document.uri, result);
@@ -31,11 +33,11 @@ export function activate(context: vscode.ExtensionContext): void {
   diagnostics = vscode.languages.createDiagnosticCollection('semverBumpMismatchCompanion');
   context.subscriptions.push(diagnostics);
 
-  vscode.workspace.textDocuments.forEach(refresh);
+  vscode.workspace.textDocuments.forEach((doc) => refresh(context, doc));
 
   context.subscriptions.push(
-    vscode.workspace.onDidOpenTextDocument(refresh),
-    vscode.workspace.onDidChangeTextDocument((event) => refresh(event.document)),
+    vscode.workspace.onDidOpenTextDocument((doc) => refresh(context, doc)),
+    vscode.workspace.onDidChangeTextDocument((event) => refresh(context, event.document)),
     vscode.workspace.onDidCloseTextDocument((document) => diagnostics.delete(document.uri)),
   );
 }
