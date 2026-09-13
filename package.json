@@ -2,7 +2,7 @@
   "name": "semver-bump-mismatch-companion",
   "displayName": "Semver Bump Mismatch Companion",
   "description": "Flags a CHANGELOG.md release that reads as a breaking change but didn't bump MAJOR -- no data leaves your editor.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "GapHunterLabs",
   "icon": "images/icon.png",
   "license": "Apache-2.0",
